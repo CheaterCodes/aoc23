@@ -45,27 +45,6 @@ fn main() {
 
 }
 
-fn fast(input: &str) -> u32 {
-    let mut state = State::Init;
-    let mut first = None;
-    let mut last = None;
-    let mut sum = 0;
-
-    for byte in input.bytes() {
-        if let Some(d) = state.advance(byte) {
-            first.get_or_insert(d);
-            last = Some(d);
-        }
-
-        if byte == b'\n' {
-            sum += first.unwrap().get() * 10 + last.unwrap().get();
-            first = None;
-        }
-    }
-
-    sum
-}
-
 fn get_transition_table() -> [[State; 256]; 25] {
     let mut table = [[State::Init; 256]; 25];
 
