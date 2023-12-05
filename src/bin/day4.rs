@@ -9,9 +9,21 @@ fn main() {
 }
 
 struct Card {
-    index: u32,
+    index: usize,
     winning: Vec<u32>,
     owned: Vec<u32>,
+}
+
+impl Card {
+    fn matches(&self) -> usize {
+        let mut count = 0;
+        for owned in &self.owned {
+            if self.winning.contains(&owned) {
+                count += 1;
+            }
+        }
+        count
+    }
 }
 
 fn parse(input: &str) -> Vec<Card> {
@@ -53,7 +65,17 @@ fn part1(input: Vec<Card>) -> u32 {
 }
 
 fn part2(input: Vec<Card>) -> u32 {
-    0
+    let mut count = vec![1; input.len()];
+
+    for card in input {
+        let base = card.index - 1;
+
+        for i in 0 .. card.matches() {
+            count[base + i + 1] += count[base];
+        }
+    }
+
+    count.iter().sum()
 }
 
 #[cfg(test)]
@@ -73,5 +95,5 @@ fn test1() {
 
 #[test]
 fn test2() {
-    assert_eq!(part2(parse(INPUT)), 0);
+    assert_eq!(part2(parse(INPUT)), 30);
 }
