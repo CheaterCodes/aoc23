@@ -42,9 +42,9 @@ fn part1(input: &str) -> u32 {
 fn part2(input: &str) -> u32 {
     let mut sum = 0;
 
-    'game: for line in input.lines() {
+    for line in input.lines() {
         let (game, sets) = line.split_once(": ").unwrap();
-        let game = game.split_once(" ").unwrap().1.parse::<u32>().unwrap();
+        let _game = game.split_once(" ").unwrap().1.parse::<u32>().unwrap();
         let sets = sets
             .split("; ")
             .map(|set| set
