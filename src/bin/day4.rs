@@ -51,14 +51,7 @@ fn part1(input: Vec<Card>) -> u32 {
     let mut sum = 0;
 
     for card in input {
-        let mut score = 1;
-        for owned in card.owned {
-            if card.winning.contains(&owned) {
-                score *= 2;
-            }
-        }
-
-        sum += score / 2;
+        sum +=  1 << card.matches() >> 1;
     }
 
     sum
