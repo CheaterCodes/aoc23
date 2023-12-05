@@ -43,7 +43,46 @@ fn part1(input: &str) -> u32 {
 }
 
 fn part2(input: &str) -> u32 {
-    0
+    let number_regex = Regex::new("\\d+").unwrap();
+    let symbol_regex = Regex::new("[^\\.\\d]").unwrap();
+
+    let mut numbers = Vec::new();
+    let mut symbols = Vec::new();
+
+    for line in input.lines() {
+        let line_numbers: Vec<_> = number_regex.find_iter(line).map(|m| (m.as_str().parse::<u32>().unwrap(), m.range())).collect();
+        numbers.push(line_numbers);
+
+        let line_symbols: Vec<_> = symbol_regex.find_iter(line).map(|m| (m.as_str().chars().next().unwrap(), m.range().start)).collect();
+        symbols.push(line_symbols);
+    }
+
+    let mut sum = 0;
+    for (line, line_symbols) in symbols.iter().enumerate() {
+        for position in line_symbols.iter().filter(|(c, _)| *c == '*').map(|(_, i)| i) {
+            let mut product = 1;
+            let mut count = 0;
+
+            for line in line.saturating_sub(1) ..= (line + 1) {
+                if let Some(numbers) = numbers.get(line) {
+                    for (number, range) in numbers {    
+                        let extended_range = range.start.saturating_sub(1) ..= range.end;
+
+                        if extended_range.contains(position) {
+                            product *= number;
+                            count += 1;
+                        }
+                    }
+                }
+            }
+
+            if count == 2 {
+                sum += product;
+            }
+        }
+    }
+
+    sum
 }
 
 #[cfg(test)]
@@ -67,5 +106,5 @@ fn test1() {
 
 #[test]
 fn test2() {
-    assert_eq!(part2(INPUT), 0);
+    assert_eq!(part2(INPUT), 467835);
 }
