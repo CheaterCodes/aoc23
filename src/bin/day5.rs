@@ -1,3 +1,5 @@
+use std::ops::Range;
+
 fn main() {
     let input = std::fs::read_to_string("./input/day5.txt").unwrap();
     
@@ -20,9 +22,8 @@ struct Map {
 
 #[derive(Debug)]
 struct Entry {
-    destination: usize,
-    source: usize,
-    length: usize,
+    source: Range<usize>,
+    destination: Range<usize>,
 }
 
 fn parse(input: &str) -> Input {
@@ -50,10 +51,14 @@ fn parse(input: &str) -> Input {
             }
 
             let mut parts = line.split_whitespace().map(str::parse).map(Result::unwrap);
+            
+            let destination: usize = parts.next().unwrap();
+            let source: usize = parts.next().unwrap();
+            let length: usize = parts.next().unwrap();
+
             map.entries.push(Entry {
-                destination: parts.next().unwrap(),
-                source: parts.next().unwrap(),
-                length: parts.next().unwrap()
+                source: source .. source + length,
+                destination: destination .. destination + length,
             });
         }
         
@@ -64,14 +69,13 @@ fn parse(input: &str) -> Input {
 }
 
 fn part1(input: Input) -> u32 {
-
     let mut indices = input.seeds.clone();
 
     for map in input.maps {
         for index in &mut indices {
             for entry in &map.entries {
-                if *index >= entry.source && *index - entry.source< entry.length {
-                    *index = *index - entry.source + entry.destination;
+                if entry.source.contains(index) {
+                    *index = *index - entry.source.start + entry.destination.start;
                     break;
                 }
             }
@@ -81,8 +85,46 @@ fn part1(input: Input) -> u32 {
     *indices.iter().min().unwrap() as u32
 }
 
-fn part2(_input: Input) -> u32 {
-    0
+fn part2(input: Input) -> usize {
+    let mut ranges: Vec<_> = input.seeds.chunks_exact(2).map(|c| (c[0] .. c[0] + c[1])).collect();
+    
+    for map in input.maps {
+        let mut mapped_ranges = Vec::new();
+
+        'range: while let Some(range) = ranges.pop() {
+            if range.is_empty() {
+                continue;
+            }
+
+            for entry in &map.entries {
+                // Fully contained
+                if entry.source.start <= range.start && range.end <= entry.source.end {
+                    mapped_ranges.push((range.start - entry.source.start + entry.destination.start) .. (range.end - entry.source.start + entry.destination.start));
+                    continue 'range;
+                }
+
+                // Contains start
+                if entry.source.contains(&range.start) {
+                    ranges.push(range.start .. entry.source.end);
+                    ranges.push(entry.source.end .. range.end);
+                    continue 'range;
+                }
+                
+                // Contains end
+                if entry.source.contains(&(range.end - 1)) {
+                    ranges.push(range.start .. entry.source.start);
+                    ranges.push(entry.source.start .. range.end);
+                    continue 'range;
+                }
+            }
+
+            mapped_ranges.push(range);
+        }
+
+        ranges = mapped_ranges;
+    }
+
+    ranges.iter().map(|r| r.start).min().unwrap()
 }
 
 #[cfg(test)]
@@ -129,5 +171,5 @@ fn test1() {
 
 #[test]
 fn test2() {
-    assert_eq!(part2(parse(INPUT)), 0);
+    assert_eq!(part2(parse(INPUT)), 46);
 }
