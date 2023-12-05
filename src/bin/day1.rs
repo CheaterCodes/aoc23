@@ -29,18 +29,13 @@ fn part2(input: &str) -> u32 {
         let mut first = None;
         let mut last = None;
 
+        let words = vec!["one", "two", "three", "four", "five", "six", "seven", "eight", "nine"];
+
+        
         for i in 0..line.len() {
-            let value = if let Some(d) = line[i..].chars().next().unwrap().to_digit(10) { d }
-                else if line[i..].starts_with("one") { 1 }
-                else if line[i..].starts_with("two") { 2 }
-                else if line[i..].starts_with("three") { 3 }
-                else if line[i..].starts_with("four") { 4 }
-                else if line[i..].starts_with("five") { 5 }
-                else if line[i..].starts_with("six") { 6 }
-                else if line[i..].starts_with("seven") { 7 }
-                else if line[i..].starts_with("eight") { 8 }
-                else if line[i..].starts_with("nine") { 9 }
-                else { continue; };
+            let from_digit = line[i..].chars().next().unwrap().to_digit(10);
+            let from_word = words.iter().enumerate().find(|w| line[i..].starts_with(w.1)).map(|w| w.0 as u32 + 1);
+            let Some(value) = from_digit.or(from_word) else { continue; };
 
             last = Some(value);
             if first.is_none() {
