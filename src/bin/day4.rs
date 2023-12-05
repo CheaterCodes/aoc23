@@ -1,6 +1,3 @@
-use regex::Regex;
-
-
 fn main() {
     let input = std::fs::read_to_string("./input/day4.txt").unwrap();
     
