@@ -1,5 +1,3 @@
-use std::collections::HashMap;
-
 #[cfg(test)]
 const INPUT: &str = "\
 32T3K 765
@@ -16,7 +14,7 @@ fn test1() {
 
 #[test]
 fn test2() {
-    assert_eq!(part2(parse(INPUT)), 0);
+    assert_eq!(part2(parse(INPUT)), 5905);
 }
 
 
@@ -102,7 +100,69 @@ fn part1(mut input: Input) -> usize {
 }
 
 
-fn part2(input: Input) -> u32 {
-    let mut result = 0;
-    result
+fn alt_score_card(card: char) -> u8 {
+    match card {
+        '2' => 2,
+        '3' => 3,
+        '4' => 4,
+        '5' => 5,
+        '6' => 6,
+        '7' => 7,
+        '8' => 8,
+        '9' => 9,
+        'T' => 10,
+        'J' => 0,
+        'Q' => 12,
+        'K' => 13,
+        'A' => 14,
+        _ => panic!()
+    }
+}
+
+fn alt_score_hand(hand: [char; 5]) -> u64 {
+    let mut count: Vec<(char, u8)> = Vec::new();
+    for card in hand {
+        if let Some((_, count)) = count.iter_mut().find(|(c, _)| *c == card) {
+            *count += 1;
+        } else {
+            count.push((card, 1));
+        }
+    }
+
+    count.sort_by_key(|(_, count)| *count);
+    count.reverse();
+    
+    let jokers = count.iter()
+        .enumerate()
+        .find_map(|(i, &(card, _))| if card == 'J' { Some(i) } else { None })
+        .map(|i| count.remove(i).1)
+        .unwrap_or_default();
+
+    let count: Vec<u8> = count.into_iter().map(|c| c.1).collect();
+    
+    let mut score = match (jokers, count.as_slice()) {
+        (_, []) => 6,
+        (_, [_]) => 6,
+        (_, [_, 1]) => 5,
+        (_, [_, 2]) => 4,
+        (_, [_, 1, 1]) => 3,
+        (0, [2, 2, 1]) => 2,
+        (_, [_, 1, 1, 1]) => 1,
+        (0, [1, 1, 1, 1, 1]) => 0,
+        a @ _ => unreachable!("Unexpected: {:?}", a)
+    };
+
+    score = alt_score_card(hand[0]) as u64 + (score << 8);
+    score = alt_score_card(hand[1]) as u64 + (score << 8);
+    score = alt_score_card(hand[2]) as u64 + (score << 8);
+    score = alt_score_card(hand[3]) as u64 + (score << 8);
+    score = alt_score_card(hand[4]) as u64 + (score << 8);
+
+
+    score
+}
+
+fn part2(mut input: Input) -> usize {
+    input.sort_by_cached_key(|e| alt_score_hand(e.0));
+    input.iter().enumerate().map(|(i, &(_, bid))| (i + 1) * bid as usize).sum()
 }
