@@ -104,16 +104,16 @@ fn part1(input: Input) -> u32 {
 
 #[derive(Debug)]
 struct NodeInfo {
-    offset: usize,
+    _offset: usize,
     cycle: usize,
-    goals: Vec<usize>,
+    _goals: Vec<usize>,
 }
 
 fn get_node_info<'a>(mut node: &'a str, input: &'a Input) -> NodeInfo {
     let mut seen_nodes: Vec<(&str, usize)> = Vec::new();
     let mut steps = 0usize;
 
-    let (pivot, initial, cycle) = loop {
+    let (_, initial, cycle) = loop {
         let i_dir = steps % input.directions.len();
         
         if node.ends_with('Z') {
@@ -134,9 +134,9 @@ fn get_node_info<'a>(mut node: &'a str, input: &'a Input) -> NodeInfo {
     //println!("Seen: {seen_nodes:?}");
 
     NodeInfo {
-        offset: initial,
+        _offset: initial,
         cycle: cycle,
-        goals: seen_nodes.iter().map(|n| n.1).collect(),
+        _goals: seen_nodes.iter().map(|n| n.1).collect(),
     }
 }
 
